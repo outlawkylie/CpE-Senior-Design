@@ -17,9 +17,10 @@ float avgVolt = 0; //value for average voltage
 float tdsValue = 0; //value for tds
 float temperature = 25; //reference temperature
 static bool flag = false;
+static int timer_count = 0;
 
 const uint16_t t1_load = 0;
-const uint16_t t1_comp = 31250;
+const uint16_t t1_comp = 62500;
 
 OneWire ds(TempSensorPin);
 dht DHT;
@@ -54,7 +55,6 @@ void setup() {
 }
 
 void loop() {  
-delay(500);
   if(flag == true)
   {
     int DHTSample = DHT.read11(HumSensorPin);
@@ -63,27 +63,33 @@ delay(500);
     TEMPbuff[buffIdx] = getTemp();
     buffIdx++; //increase buffer indexes
     
-    // Print the data every 60 seconds
+    // Print the data every 120 seconds
     if(buffIdx == SCOUNT)
     {
       // Print TDS Avg
-      float tds = getAvgTDS(TDSbuff, SCOUNT);
-      Serial.print("TDS Value:");
-      Serial.print(tdsValue,0);
+      float tdsAvg = getAvgTDS(TDSbuff, SCOUNT);
+      Serial.print("TDS:");
+      Serial.print(tdsAvg,2);
       Serial.println("ppm");
       
       // Print Temperature Avg
-      float temperature = getAvgTemp(TEMPbuff, SCOUNT);
-      Serial.print("Temp Value:");
-      Serial.print(temperature*1.8 +32);
+      float tempAvg = getAvgTemp(TEMPbuff, SCOUNT);
+      Serial.print("Temperature:");
+      Serial.print(tempAvg*1.8 +32);
       Serial.print("°F\n");
   
-      //Print Humidity Avg
+      // Print Humidity Avg
       float humidityAvg = getAvgHum(HUMbuff, SCOUNT);
-      Serial.print("Humidity Value:");
+      Serial.print("Humidity:");
       Serial.print(humidityAvg);
+      Serial.print("%");
       Serial.print("\n* * * * * * * * * *\n");
       buffIdx = 0;
+
+      // Check for unstable points. If we reach any, output error message.
+      if(tdsAvg < 300) { Serial.print("TDS low. Add nutrient solution.");}
+      if(tempAvg < 3){ Serial.print("Temperature low. Please move plant to warmer area.");}
+      if(tempAvg > 30){ Serial.print("Temperature high. Please move plant to cooler area.");}
     }
     flag = false;
   }
