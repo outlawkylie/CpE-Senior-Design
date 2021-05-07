@@ -34,7 +34,7 @@ void setup() {
   //Reset timer1 control register A
   TCCR1A = 0;
 
-  //Enable CTC mode
+  //Enable PWM mode
   TCCR1B &= ~(1<<WGM13);
   TCCR1B |= (1<<WGM12);
 
@@ -70,7 +70,7 @@ void loop() {
       float tdsAvg = getAvgTDS(TDSbuff, SCOUNT);
       Serial.print("TDS:");
       Serial.print(tdsAvg,2);
-      Serial.println("ppm");
+      Serial.println("ppm\n");
       
       // Print Temperature Avg
       float tempAvg = getAvgTemp(TEMPbuff, SCOUNT);
@@ -83,13 +83,14 @@ void loop() {
       Serial.print("Humidity:");
       Serial.print(humidityAvg);
       Serial.print("%");
-      Serial.print("\n* * * * * * * * * *\n");
       buffIdx = 0;
 
       // Check for unstable points. If we reach any, output error message.
-      if(tdsAvg < 300) { Serial.print("TDS low. Add nutrient solution.");}
-      if(tempAvg < 3){ Serial.print("Temperature low. Please move plant to warmer area.");}
-      if(tempAvg > 30){ Serial.print("Temperature high. Please move plant to cooler area.");}
+      if(tdsAvg < 300) { Serial.print("TDS low. Add nutrient solution.\n");}
+      if(tempAvg < 3){ Serial.print("Temperature low. Please move plant to warmer area.\n");}
+      if(tempAvg > 30){ Serial.print("Temperature high. Please move plant to cooler area.\n");}
+      
+      Serial.print("\n* * * * * * * * * *\n");
     }
     flag = false;
   }
