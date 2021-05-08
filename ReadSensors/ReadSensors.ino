@@ -20,7 +20,8 @@ static bool flag = false;
 static int timer_count = 0;
 
 const uint16_t t1_load = 0;
-const uint16_t t1_comp = 62500;
+const uint16_t t1_top = 62500; //top value
+const uint16_t t1_comp = 6250;
 
 OneWire ds(TempSensorPin);
 dht DHT;
@@ -34,21 +35,21 @@ void setup() {
   //Reset timer1 control register A
   TCCR1A = 0;
 
-  //Enable PWM mode
-  TCCR1B &= ~(1<<WGM13);
-  TCCR1B |= (1<<WGM12);
+  //Enable Fast PWM mode with OCR1A TOP
+  TCCR1B |= (1<<WGM12) | (1<<WGM11) | (1<<WGM10);
 
   //Set prescalar to 1024
-  TCCR1B |= (1<<CS12);
-  TCCR1B |= (1<<CS10);
-  TCCR1B &= ~(1<<CS11);
+  TCCR1B |= (1<<CS12); //set to 1
+  TCCR1B &= ~(1<<CS11); //set to 0
+  TCCR1B |= (1<<CS10); //set to 1
 
   //Set up timer compare and load values
   TCNT1 = t1_load;
-  OCR1A = t1_comp;
+  OCR1A = t1_top;
+  OCR1B = t1_comp;
 
   // Enable compare interrupt
-  TIMSK1 = (1<<OCIE1A);
+  TIMSK1 = (1<<OCIE1B);
 
   //Enable global interrupts
   sei();  
@@ -96,7 +97,9 @@ void loop() {
   }
 }
 
-ISR(TIMER1_COMPA_vect)
+ISR(TIMER1_COMPB_vect)
 {
 flag = true;
+Serial.print(millis());
+Serial.print("\n");
 }
