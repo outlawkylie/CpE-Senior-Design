@@ -72,18 +72,6 @@ float getTemp(){
   return TemperatureSum;
 }
 
-
-float getAvgHum(float *TempArr, int size)
-{
-  float totalHum = 0;
-  for( int i = 0; i < size; i++ )
-  {
-    totalHum += TempArr[i];
-  }
-  return (float)(totalHum/size);
-}
-
-
 float getAvgTemp(int *TempArr, int size)
 {
   int totalTemp = 0;
@@ -96,12 +84,23 @@ float getAvgTemp(int *TempArr, int size)
 
 float getAvgTDS(int *TempArr, int size)
 {
-    for(cpyIdx=0;cpyIdx<SCOUNT;cpyIdx++)
-      bufferTemp[cpyIdx]= TDSbuff[cpyIdx];
-    avgVolt = getMedianNum(bufferTemp,SCOUNT) * (float)VREF / 1024.0; // read the analog value more stable by the median filtering algorithm, and convert to voltage value
-    float compensationCoefficient=1.0+0.02*(temperature-25.0);    //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
-    float compensationVolatge=avgVolt/compensationCoefficient;  //temperature compensation
-    tdsValue=(133.42*compensationVolatge*compensationVolatge*compensationVolatge - 255.86*compensationVolatge*compensationVolatge + 857.39*compensationVolatge)*0.5; //convert voltage value to tds value
+    for(cpyIdx=0; cpyIdx<size; cpyIdx++)
+    {
+      Serial.print( TDSbuff[cpyIdx]);
+        bufferTemp[cpyIdx]= TDSbuff[cpyIdx]; 
+    }
+      
+    // read the analog value more stable by the median filtering algorithm, and convert to voltage value
+    avgVolt = getMedianNum(bufferTemp,SCOUNT) * (float)VREF / 1024.0;
+
+    //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
+    float compCo=1.0+0.02*(temperature-25.0);
+    
+    //temperature compensation
+    float compVolt=avgVolt/compCo;
+
+    //convert voltage value to tds value
+    tdsValue=(133.42*compVolt*compVolt*compVolt - 255.86*compVolt*compVolt + 857.39*compVolt)*0.5;
 
     return tdsValue;
 }

@@ -3,13 +3,12 @@
 
 #define TdsSensorPin A0
 #define TempSensorPin 3
-#define HumSensorPin 12
+#define LevelSensorPin 4
 
 #define VREF 5.0 //reference voltage for TDS
 #define SCOUNT 30 //sample count
 int TDSbuff[SCOUNT]; //buffer to hold samples of TDS
 int TEMPbuff[SCOUNT]; //buffer to hold samples of TEMPERATURE
-float HUMbuff[SCOUNT]; //buffer to hold samples of HUMIDITY
 int bufferTemp[SCOUNT]; //temp buffer
 static int buffIdx = 0; 
 int cpyIdx = 0;
@@ -20,46 +19,49 @@ static bool flag = false;
 static int timer_count = 0;
 
 const uint16_t t1_load = 0;
-const uint16_t t1_top = 62500; //top value
-const uint16_t t1_comp = 6250;
+const uint16_t t1_comp = 62500;
 
 OneWire ds(TempSensorPin);
-dht DHT;
+DFRobot_EC EC_sensor;
 
+/************************************************
+ * Begin the setup
+ ************************************************/
 void setup() {
   Serial.begin(9600);
   pinMode(TdsSensorPin, INPUT);
   pinMode(TempSensorPin, INPUT);
-  pinMode(HumSensorPin, INPUT);
+  pinMode(LevelSensorPin, INPUT);
 
   //Reset timer1 control register A
   TCCR1A = 0;
 
-  //Enable Fast PWM mode with OCR1A TOP
-  TCCR1B |= (1<<WGM12) | (1<<WGM11) | (1<<WGM10);
+  //Enable PWM mode
+  TCCR1B &= ~(1<<WGM13);
+  TCCR1B |= (1<<WGM12);
 
   //Set prescalar to 1024
-  TCCR1B |= (1<<CS12); //set to 1
-  TCCR1B &= ~(1<<CS11); //set to 0
-  TCCR1B |= (1<<CS10); //set to 1
+  //TCCR1B |= (1<<CS12);
+  //TCCR1B |= (1<<CS10);
+  //TCCR1B &= ~(1<<CS11);
 
   //Set up timer compare and load values
   TCNT1 = t1_load;
-  OCR1A = t1_top;
-  OCR1B = t1_comp;
+  OCR1A = t1_comp;
 
   // Enable compare interrupt
-  TIMSK1 = (1<<OCIE1B);
+  TIMSK1 = (1<<OCIE1A);
 
   //Enable global interrupts
   sei();  
 }
 
+/************************************************
+ * Monitoring Loop
+ ************************************************/
 void loop() {  
   if(flag == true)
   {
-    int DHTSample = DHT.read11(HumSensorPin);
-    HUMbuff[buffIdx] = DHT.humidity;
     TDSbuff[buffIdx] = analogRead(TdsSensorPin);
     TEMPbuff[buffIdx] = getTemp();
     buffIdx++; //increase buffer indexes
@@ -78,13 +80,20 @@ void loop() {
       Serial.print("Temperature:");
       Serial.print(tempAvg*1.8 +32);
       Serial.print("°F\n");
-  
-      // Print Humidity Avg
-      float humidityAvg = getAvgHum(HUMbuff, SCOUNT);
-      Serial.print("Humidity:");
-      Serial.print(humidityAvg);
-      Serial.print("%");
       buffIdx = 0;
+
+      // Print Liquid Level
+      int liquidLvl = digitalRead(4);
+      if( liquidLvl )
+      {
+        Serial.print("Liquid level is fine.");
+      }
+      else
+      {
+        Serial.print("Liquid level needs refill.");
+        Serial.print("Liquid level is at:");
+        Serial.print(liquidLvl);
+      }
 
       // Check for unstable points. If we reach any, output error message.
       if(tdsAvg < 300) { Serial.print("TDS low. Add nutrient solution.\n");}
@@ -97,9 +106,7 @@ void loop() {
   }
 }
 
-ISR(TIMER1_COMPB_vect)
+ISR(TIMER1_COMPA_vect)
 {
 flag = true;
-Serial.print(millis());
-Serial.print("\n");
 }
