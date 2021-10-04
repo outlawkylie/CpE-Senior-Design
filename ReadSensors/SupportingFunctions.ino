@@ -1,31 +1,5 @@
 #include <OneWire.h>
 
-//For TDS
-int getMedianNum(int bArray[], int iFilterLen) 
-{
-      int bTab[iFilterLen];
-      for (byte i = 0; i<iFilterLen; i++)
-      bTab[i] = bArray[i];
-      int i, j, bTemp;
-      for (j = 0; j < iFilterLen - 1; j++) 
-      {
-      for (i = 0; i < iFilterLen - j - 1; i++) 
-          {
-        if (bTab[i] > bTab[i + 1]) 
-            {
-        bTemp = bTab[i];
-            bTab[i] = bTab[i + 1];
-        bTab[i + 1] = bTemp;
-         }
-      }
-      }
-      if ((iFilterLen & 1) > 0)
-    bTemp = bTab[(iFilterLen - 1) / 2];
-      else
-    bTemp = (bTab[iFilterLen / 2] + bTab[iFilterLen / 2 - 1]) / 2;
-      return bTemp;
-}
-
 float getTemp(){
   //returns the temperature from one DS18S20 in DEG Celsius
 
@@ -72,35 +46,22 @@ float getTemp(){
   return TemperatureSum;
 }
 
-float getAvgTemp(int *TempArr, int size)
+float getAvgVal(int *arr, int size)
 {
-  int totalTemp = 0;
+  int total = 0;
   for( int i = 0; i < size; i++ )
   {
-    totalTemp += TempArr[i];
+    total += arr[i];
   }
-  return (float)(totalTemp/size);
+  return (float)(total/size);
 }
 
-float getAvgTDS(int *TempArr, int size)
+float getAvgValFlt(float *arr, int size)
 {
-    for(cpyIdx=0; cpyIdx<size; cpyIdx++)
-    {
-      Serial.print( TDSbuff[cpyIdx]);
-        bufferTemp[cpyIdx]= TDSbuff[cpyIdx]; 
-    }
-      
-    // read the analog value more stable by the median filtering algorithm, and convert to voltage value
-    avgVolt = getMedianNum(bufferTemp,SCOUNT) * (float)VREF / 1024.0;
-
-    //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.02*(fTP-25.0));
-    float compCo=1.0+0.02*(temperature-25.0);
-    
-    //temperature compensation
-    float compVolt=avgVolt/compCo;
-
-    //convert voltage value to tds value
-    tdsValue=(133.42*compVolt*compVolt*compVolt - 255.86*compVolt*compVolt + 857.39*compVolt)*0.5;
-
-    return tdsValue;
+  float total = 0;
+  for( int i = 0; i < size; i++ )
+  {
+    total += arr[i];
+  }
+  return (float)(total/size);
 }
