@@ -6,14 +6,16 @@
 
 #define EcSensorPin A0
 #define TdsSensorPin A1
+#define PhSensorPin A2
 #define TempSensorPin 3
 #define LevelSensorPin 4
 
-#define SCOUNT 30 //sample count
+#define SCOUNT 10 //sample count
 
-int TDSbuff[SCOUNT]; //buffer to hold samples of TDS
-int TEMPbuff[SCOUNT]; //buffer to hold samples of TEMPERATURE
-float ECbuff[SCOUNT]; //temp buffer
+int TDSbuff[SCOUNT]; //TDS buffer to hold samples of TDS
+int TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
+float ECbuff[SCOUNT]; //EC buffer to hold samples of EC
+int PHbuff[SCOUNT]; //pH buffer to hold samples of PH
 
 static int buffIdx = 0; 
 int cpyIdx = 0;
@@ -22,6 +24,7 @@ float tdsValue = 0; //value for tds
 float temperature = 25; //reference temperature
 float ecvoltage = 5; //ref ec voltage
 float ecvalue;
+int phvalue;
 static bool flag = false;
 static int timer_count = 0;
 
@@ -37,9 +40,12 @@ GravityTDS TDS_sensor;
  ************************************************/
 void setup() {
   Serial.begin(9600);
+
+  //Set up inputs/outputs
   pinMode(TdsSensorPin, INPUT);
   pinMode(TempSensorPin, INPUT);
   pinMode(LevelSensorPin, INPUT);
+  pinMode(PhSensorPin, INPUT);
 
   //Set up TDS Sensor
   TDS_sensor.setPin(TdsSensorPin);
@@ -90,6 +96,9 @@ void loop() {
     //Read EC
     ecvoltage = analogRead(EcSensorPin)/1024.0*5000; //read voltage of ec
     ECbuff[buffIdx] = EC_sensor.readEC(ecvoltage, TEMPbuff[buffIdx]);
+
+    //Read pH
+    phvalue = analogRead(PhSensorPin)*5.0*3.5/1024;
     
     buffIdx++; //increase buffer indexes
     
@@ -117,6 +126,12 @@ void loop() {
       Serial.print("EC: ");
       Serial.print(ecAvg, 2);
       Serial.print(" ms/cm\n");      
+
+      //Print pH
+      float pHavg = getAvgVal(PHbuff, SCOUNT);
+      Serial.print("pH: ");
+      Serial.print(pHavg, 2);
+      Serial.print("\n");
       
       // Print Liquid Level
       int liquidLvl = digitalRead(4);
