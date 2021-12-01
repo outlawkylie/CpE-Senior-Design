@@ -2,31 +2,39 @@
 #include "GravityTDS.h"
 #include <EEPROM.h>
 #include <OneWire.h>
-#include <dht.h>
 
-#define EcSensorPin A0
-#define TdsSensorPin A1
-#define PhSensorPin A2
-#define TempSensorPin 3
-#define LevelSensorPin 4
+#define PhSensorPin     A5
+#define LevelSensorPin  A6
+#define EcSensorPin     A7
+#define TdsSensorPin    A8
+#define TempSensorPin   A9
 
-#define SCOUNT 10 //sample count
+//#define button          A12
+#define driverDIR       A14
+#define driverPUL       A15
 
-int TDSbuff[SCOUNT]; //TDS buffer to hold samples of TDS
-int TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
+#define SCOUNT          30
+
+int   TDSbuff[SCOUNT]; //TDS buffer to hold samples of TDS
+int   TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
 float ECbuff[SCOUNT]; //EC buffer to hold samples of EC
-int PHbuff[SCOUNT]; //pH buffer to hold samples of PH
+int   PHbuff[SCOUNT]; //pH buffer to hold samples of PH
 
-static int buffIdx = 0; 
-int cpyIdx = 0;
-float avgVolt = 0; //value for average voltage
-float tdsValue = 0; //value for tds
-float temperature = 25; //reference temperature
-float ecvoltage = 5; //ref ec voltage
+static int  buffIdx     = 0; 
+int         cpyIdx      = 0;
+float       avgVolt     = 0; //value for average voltage
+float       tdsValue    = 0; //value for tds
+float       temperature = 25; //reference temperature
+float       ecvoltage   = 5; //ref ec voltage
+static int  timer_count = 0;
+static bool flag    = false;
+
+
 float ecvalue;
-int phvalue;
-static bool flag = false;
-static int timer_count = 0;
+int   phvalue;
+
+int     driver_speed  = 700;
+boolean driver_dir    = LOW;
 
 const uint16_t t1_load = 0;
 const uint16_t t1_comp = 62500;
@@ -42,10 +50,12 @@ void setup() {
   Serial.begin(9600);
 
   //Set up inputs/outputs
-  pinMode(TdsSensorPin, INPUT);
-  pinMode(TempSensorPin, INPUT);
-  pinMode(LevelSensorPin, INPUT);
-  pinMode(PhSensorPin, INPUT);
+  pinMode( TdsSensorPin,    INPUT );
+  pinMode( TempSensorPin,   INPUT );
+  pinMode( LevelSensorPin,  INPUT );
+  pinMode( PhSensorPin,     INPUT );
+  pinMode( driverPUL,       OUTPUT );
+  pinMode( driverDIR,       OUTPUT );
 
   //Set up TDS Sensor
   TDS_sensor.setPin(TdsSensorPin);
@@ -86,6 +96,7 @@ void setup() {
 void loop() {  
   if(flag == true)
   {
+  //Flag happens every 4s
     //Read Temperature
     TEMPbuff[buffIdx] = getTemp();
 
@@ -146,12 +157,26 @@ void loop() {
         Serial.print(liquidLvl);
       }
 
+      //KO TODO: Replace these statements with equivalent LCD Outputs
       // Check for unstable points. If we reach any, output error message.
       if(tdsAvg < 300) { Serial.print("\nTDS low. Add nutrient solution.\n");}
       if(tempAvg < 3){ Serial.print("\nTemperature low. Please move plant to warmer area.\n");}
       if(tempAvg > 30){ Serial.print("\nTemperature high. Please move plant to cooler area.\n");}
       
       Serial.print("\n* * * * * * * * * *\n");
+
+
+      //Run the motor just a little
+      Serial.print("Running motor.\n");
+      for( int j = 0; j < 10000; j++ )
+        {
+        digitalWrite(driverDIR, driver_dir);
+        digitalWrite(driverPUL, HIGH);
+        delayMicroseconds(driver_speed);
+        digitalWrite(driverPUL, LOW);
+        delayMicroseconds(driver_speed);
+        }
+      Serial.print("Stopping motor.\n");
     }
     flag = false;
   }
