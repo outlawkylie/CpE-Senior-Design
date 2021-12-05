@@ -66,3 +66,19 @@ float getAvgValFlt(float *arr, int size)
   }
   return (float)(total/size);
 }
+
+void reverse_rotate()
+{
+  driver_dir = !driver_dir;
+
+  // 7142 = 10 seconds of reverse rotation
+  for( int i = 0; i < 7142; i++ )
+  {
+  digitalWrite(driverDIR, driver_dir);
+  digitalWrite(driverPUL, HIGH);
+  delayMicroseconds(driver_speed);
+  digitalWrite(driverPUL, LOW);
+  delayMicroseconds(driver_speed);
+
+  }
+}

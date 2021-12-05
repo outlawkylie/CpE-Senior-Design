@@ -3,14 +3,14 @@
 #include <EEPROM.h>
 #include <OneWire.h>
 
-#define PhSensorPin     A5
-#define LevelSensorPin  A6
-#define EcSensorPin     A7
-#define TdsSensorPin    A8
-#define TempSensorPin   A9
+#define PhSensorPin     A5    /* pH sensor              */
+#define LevelSensorPin  A6    /* water level sensor     */
+#define EcSensorPin     A7    /* EC sensor              */
+#define TdsSensorPin    A8    /* TDS sensor             */
+#define TempSensorPin   A9    /* temp sensor            */
 
-//#define button          A12
-#define driverDIR       A14
+#define reedSwitch      22    /* reed switch, tray loc  */
+#define driverDIR       A14   /* motor direction        */
 #define driverPUL       A15
 
 #define SCOUNT          30
@@ -94,6 +94,11 @@ void setup() {
  * Monitoring Loop
  ************************************************/
 void loop() {  
+  if( digitalRead(reedSwitch) == 1 )
+  {
+    reverse_rotation();
+  }
+  
   if(flag == true)
   {
   //Flag happens every 4s
