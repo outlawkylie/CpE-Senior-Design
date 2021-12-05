@@ -167,7 +167,7 @@ void loop() {
 
 
       //Run the motor just a little
-      Serial.print("Running motor.\n");
+      // Each "j" is 1.4ms
       for( int j = 0; j < 10000; j++ )
         {
         digitalWrite(driverDIR, driver_dir);
@@ -176,7 +176,6 @@ void loop() {
         digitalWrite(driverPUL, LOW);
         delayMicroseconds(driver_speed);
         }
-      Serial.print("Stopping motor.\n");
     }
     flag = false;
   }
