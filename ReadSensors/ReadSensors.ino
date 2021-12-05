@@ -159,8 +159,8 @@ void loop() {
 
       //KO TODO: Replace these statements with equivalent LCD Outputs
       // Check for unstable points. If we reach any, output error message.
-      if(tdsAvg < 300) { Serial.print("\nTDS low. Add nutrient solution.\n");}
-      if(tempAvg < 3){ Serial.print("\nTemperature low. Please move plant to warmer area.\n");}
+      if(tdsAvg < 300){ Serial.print("\nTDS low. Add nutrient solution.\n");}
+      if(tempAvg < 3) { Serial.print("\nTemperature low. Please move plant to warmer area.\n");}
       if(tempAvg > 30){ Serial.print("\nTemperature high. Please move plant to cooler area.\n");}
       
       Serial.print("\n* * * * * * * * * *\n");

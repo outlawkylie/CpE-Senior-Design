@@ -2,6 +2,7 @@
 
 float getTemp(){
   //returns the temperature from one DS18S20 in DEG Celsius
+  //Src: OneWire library examples
 
   byte data[12];
   byte addr[8];
