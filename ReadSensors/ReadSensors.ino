@@ -1,3 +1,4 @@
+#include "DFRobot_PH.h"
 #include "DFRobot_EC.h"
 #include "GravityTDS.h"
 #include <EEPROM.h>
@@ -18,7 +19,7 @@
 int   TDSbuff[SCOUNT]; //TDS buffer to hold samples of TDS
 int   TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
 float ECbuff[SCOUNT]; //EC buffer to hold samples of EC
-int   PHbuff[SCOUNT]; //pH buffer to hold samples of PH
+float PHbuff[SCOUNT]; //pH buffer to hold samples of PH
 
 static int  buffIdx     = 0; 
 int         cpyIdx      = 0;
@@ -28,6 +29,7 @@ float       temperature = 25; //reference temperature
 float       ecvoltage   = 5; //ref ec voltage
 static int  timer_count = 0;
 static bool flag    = false;
+float       ph_voltage  = 0;
 
 
 float ecvalue;
@@ -42,6 +44,7 @@ const uint16_t t1_comp = 62500;
 OneWire ds(TempSensorPin);
 DFRobot_EC EC_sensor;
 GravityTDS TDS_sensor;
+DFRobot_PH PH_sensor;
 
 /************************************************
  * Begin the setup
@@ -66,6 +69,9 @@ void setup() {
 
   //Set up EC sensor
   EC_sensor.begin();
+
+  //Set up PH sensor
+  PH_sensor.begin();
   
   //Reset timer1 control register A
   TCCR1A = 0;
@@ -114,8 +120,10 @@ void loop() {
     ECbuff[buffIdx] = EC_sensor.readEC(ecvoltage, TEMPbuff[buffIdx]);
 
     //Read pH
-    phvalue = analogRead(PhSensorPin)*5.0*3.5/1024;
-    
+    ph_voltage = analogRead(PhSensorPin)/1024.0*5000;
+    phValue = ph.readPH(ph_voltage, 25 ); //TODO: 25 is DEFAULT (room temperature in C) UPDATE WHEN INTEGRATING!!!!
+    PHbuff[buffIdx] = phValue;
+        
     buffIdx++; //increase buffer indexes
     
     // Print the data every 120 seconds
