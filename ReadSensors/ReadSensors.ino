@@ -15,18 +15,19 @@
 /************************************************
  * Definitions
  ************************************************/
-#define PhSensorPin     A5    /* pH sensor              */
-#define LevelSensorPin  A6    /* water level sensor     */
-#define EcSensorPin     A7    /* EC sensor              */
-#define TdsSensorPin    A8    /* TDS sensor             */
-#define TempSensorPin   A9    /* temp sensor            */
+#define PHSENSORPIN     A5    /* pH sensor              */
+#define LEVELSENSORPIN  A6    /* water level sensor     */
+#define ECSENSORPIN     A7    /* EC sensor              */
+#define TDSSENSORPIN    A8    /* TDS sensor             */
+#define TEMPSENSORPIN   A9    /* temp sensor            */
 
-#define reedSwitch      22    /* reed switch, tray loc  */
-#define driverDIR       A14   /* motor direction        */
-#define driverPUL       A15
+#define REEDSWITCH      22    /* reed switch, tray loc  */
+#define DRIVERDIR       A14   /* motor direction        */
+#define DRIVERPUL       A15
 
 #define SCOUNT          30
 #define EEPROM_DIR      0
+#define PHOFFSET        0.04
 
 /************************************************
  * Global Variables
@@ -34,21 +35,20 @@
 int   TDSbuff[SCOUNT]; //TDS buffer to hold samples of TDS
 int   TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
 float ECbuff[SCOUNT]; //EC buffer to hold samples of EC
-float PHbuff[SCOUNT]; //pH buffer to hold samples of PH
+int   PHbuff[SCOUNT]; //pH buffer to hold samples of PH
 
 static int  buffIdx     = 0; 
 int         cpyIdx      = 0;
 float       avgVolt     = 0; //value for average voltage
 float       tdsValue    = 0; //value for tds
 float       temperature = 25; //reference temperature
-float       ecvoltage   = 5; //ref ec voltage
+float       ec_voltage   = 5; //ref ec voltage
 static int  timer_count = 0;
 static bool flag    = false;
 float       ph_voltage  = 0;
 
 
 float ecvalue;
-int   phvalue;
 
 int     driver_speed  = 700;
 boolean driver_dir    = EEPROM.read( EEPROM_DIR );
@@ -56,7 +56,7 @@ boolean driver_dir    = EEPROM.read( EEPROM_DIR );
 const uint16_t t1_load = 0;
 const uint16_t t1_comp = 62500;
 
-OneWire ds(TempSensorPin);
+OneWire ds(TEMPSENSORPIN);
 DFRobot_EC EC_sensor;
 GravityTDS TDS_sensor;
 DFRobot_PH PH_sensor;
@@ -71,17 +71,17 @@ void setup() {
   /************************************************
    * Set up I/O
    ************************************************/
-  pinMode( TdsSensorPin,    INPUT );
-  pinMode( TempSensorPin,   INPUT );
-  pinMode( LevelSensorPin,  INPUT );
-  pinMode( PhSensorPin,     INPUT );
-  pinMode( driverPUL,       OUTPUT );
-  pinMode( driverDIR,       OUTPUT );
+  pinMode( TDSSENSORPIN,    INPUT );
+  pinMode( TEMPSENSORPIN,   INPUT );
+  pinMode( LEVELSENSORPIN,  INPUT );
+  pinMode( PHSENSORPIN,     INPUT );
+  pinMode( DRIVERPUL,       OUTPUT );
+  pinMode( DRIVERDIR,       OUTPUT );
 
   /************************************************
    * Set up TDS Sensor
    ************************************************/
-  TDS_sensor.setPin(TdsSensorPin);
+  TDS_sensor.setPin(TDSSENSORPIN);
   TDS_sensor.setAref(5.0);
   TDS_sensor.setAdcRange(1024);
   TDS_sensor.setTemperature(25);
@@ -121,9 +121,9 @@ void loop() {
   /************************************************
    * Check if reed switch tripped
    ************************************************/
-  if( digitalRead(reedSwitch) == 1 )
+  if( digitalRead(REEDSWITCH) == 1 )
   {
-    reverse_rotation();
+    reverse_rotate();
   }
   
   if(flag == true)
@@ -136,12 +136,11 @@ void loop() {
     TDS_sensor.update();
     TDSbuff[buffIdx] = TDS_sensor.getTdsValue();
 
-    ecvoltage = analogRead(EcSensorPin)/1024.0*5000; //read voltage of ec
-    ECbuff[buffIdx] = EC_sensor.readEC(ecvoltage, TEMPbuff[buffIdx]);
+    ec_voltage = analogRead(ECSENSORPIN)/1024.0*5000; //read voltage of ec
+    ECbuff[buffIdx] = EC_sensor.readEC(ec_voltage, TEMPbuff[buffIdx]);
 
-    ph_voltage = analogRead(PhSensorPin)/1024.0*5000;
-    phValue = ph.readPH(ph_voltage, 25 ); //TODO: 25 is DEFAULT (room temperature in C) UPDATE WHEN INTEGRATING!!!!
-    PHbuff[buffIdx] = phValue;
+    ph_voltage = analogRead(PHSENSORPIN);
+    PHbuff[buffIdx] = ph_voltage;
         
     buffIdx++; //increase buffer indexes
 
@@ -174,9 +173,10 @@ void loop() {
       Serial.print(" ms/cm\n");      
 
       //Print pH
-      float pHavg = getAvgVal(PHbuff, SCOUNT);
+      double voltage = getAvgPH(PHbuff, SCOUNT)*5.0/1024;
+      double pHAvg = 3.5*voltage+PHOFFSET;
       Serial.print("pH: ");
-      Serial.print(pHavg, 2);
+      Serial.print(pHAvg, 2);
       Serial.print("\n");
       
       // Print Liquid Level
@@ -205,10 +205,10 @@ void loop() {
       // Each "j" is 1.4ms
       for( int j = 0; j < 10000; j++ )
         {
-        digitalWrite(driverDIR, driver_dir);
-        digitalWrite(driverPUL, HIGH);
+        digitalWrite(DRIVERDIR, driver_dir);
+        digitalWrite(DRIVERPUL, HIGH);
         delayMicroseconds(driver_speed);
-        digitalWrite(driverPUL, LOW);
+        digitalWrite(DRIVERPUL, LOW);
         delayMicroseconds(driver_speed);
         }
     }
