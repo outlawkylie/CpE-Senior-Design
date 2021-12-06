@@ -1,9 +1,20 @@
 #include "DFRobot_PH.h"
 #include "DFRobot_EC.h"
 #include "GravityTDS.h"
+/************************************************
+ * readsensors.ino - created by Kylie Outlaw
+ * and Maria Abbasi for the HydroHome project.
+ ************************************************/
+
+ /************************************************
+ * Includes
+ ************************************************/
 #include <EEPROM.h>
 #include <OneWire.h>
 
+/************************************************
+ * Definitions
+ ************************************************/
 #define PhSensorPin     A5    /* pH sensor              */
 #define LevelSensorPin  A6    /* water level sensor     */
 #define EcSensorPin     A7    /* EC sensor              */
@@ -15,7 +26,11 @@
 #define driverPUL       A15
 
 #define SCOUNT          30
+#define EEPROM_DIR      0
 
+/************************************************
+ * Global Variables
+ ************************************************/
 int   TDSbuff[SCOUNT]; //TDS buffer to hold samples of TDS
 int   TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
 float ECbuff[SCOUNT]; //EC buffer to hold samples of EC
@@ -36,7 +51,7 @@ float ecvalue;
 int   phvalue;
 
 int     driver_speed  = 700;
-boolean driver_dir    = LOW;
+boolean driver_dir    = EEPROM.read( EEPROM_DIR );
 
 const uint16_t t1_load = 0;
 const uint16_t t1_comp = 62500;
@@ -46,13 +61,16 @@ DFRobot_EC EC_sensor;
 GravityTDS TDS_sensor;
 DFRobot_PH PH_sensor;
 
+
 /************************************************
  * Begin the setup
  ************************************************/
 void setup() {
   Serial.begin(9600);
 
-  //Set up inputs/outputs
+  /************************************************
+   * Set up I/O
+   ************************************************/
   pinMode( TdsSensorPin,    INPUT );
   pinMode( TempSensorPin,   INPUT );
   pinMode( LevelSensorPin,  INPUT );
@@ -60,39 +78,38 @@ void setup() {
   pinMode( driverPUL,       OUTPUT );
   pinMode( driverDIR,       OUTPUT );
 
-  //Set up TDS Sensor
+  /************************************************
+   * Set up TDS Sensor
+   ************************************************/
   TDS_sensor.setPin(TdsSensorPin);
   TDS_sensor.setAref(5.0);
   TDS_sensor.setAdcRange(1024);
   TDS_sensor.setTemperature(25);
   TDS_sensor.begin();
 
-  //Set up EC sensor
+  /************************************************
+   * Set up EC, PH Sensor
+   ************************************************/
   EC_sensor.begin();
-
-  //Set up PH sensor
   PH_sensor.begin();
-  
-  //Reset timer1 control register A
+
+  /************************************************
+   * Set up timer, 1024 prescalar, PWM
+   * compare interrupt
+   ************************************************/
   TCCR1A = 0;
 
-  //Enable PWM mode
   TCCR1B &= ~(1<<WGM13);
   TCCR1B |= (1<<WGM12);
 
-  //Set prescalar to 1024
   TCCR1B |= (1<<CS12);
   TCCR1B |= (1<<CS10);
   TCCR1B &= ~(1<<CS11);
 
-  //Set up timer compare and load values
   TCNT1 = t1_load;
   OCR1A = t1_comp;
 
-  // Enable compare interrupt
   TIMSK1 = (1<<OCIE1A);
-
-  //Enable global interrupts
   sei();  
 }
 
@@ -100,6 +117,10 @@ void setup() {
  * Monitoring Loop
  ************************************************/
 void loop() {  
+
+  /************************************************
+   * Check if reed switch tripped
+   ************************************************/
   if( digitalRead(reedSwitch) == 1 )
   {
     reverse_rotation();
@@ -107,26 +128,27 @@ void loop() {
   
   if(flag == true)
   {
-  //Flag happens every 4s
-    //Read Temperature
+    /************************************************
+     * Flag indicating sensor read happens every 4s
+     ************************************************/
     TEMPbuff[buffIdx] = getTemp();
 
-    //Read TDS
     TDS_sensor.update();
     TDSbuff[buffIdx] = TDS_sensor.getTdsValue();
 
-    //Read EC
     ecvoltage = analogRead(EcSensorPin)/1024.0*5000; //read voltage of ec
     ECbuff[buffIdx] = EC_sensor.readEC(ecvoltage, TEMPbuff[buffIdx]);
 
-    //Read pH
     ph_voltage = analogRead(PhSensorPin)/1024.0*5000;
     phValue = ph.readPH(ph_voltage, 25 ); //TODO: 25 is DEFAULT (room temperature in C) UPDATE WHEN INTEGRATING!!!!
     PHbuff[buffIdx] = phValue;
         
     buffIdx++; //increase buffer indexes
-    
-    // Print the data every 120 seconds
+
+    /************************************************
+     * Print data every 4*SCOUNT seconds
+     * TODO: Update with print to LCD
+     ************************************************/
     if(buffIdx == SCOUNT)
     {      
       // Print Temperature Avg

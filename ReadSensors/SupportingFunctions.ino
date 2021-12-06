@@ -1,9 +1,11 @@
 #include <OneWire.h>
 
+/************************************************
+ * getTemp()
+ *    returns the temperature from one DS18S20 in 
+ *    DEG Celsius, src: OneWire library
+ ************************************************/
 float getTemp(){
-  //returns the temperature from one DS18S20 in DEG Celsius
-  //Src: OneWire library examples
-
   byte data[12];
   byte addr[8];
 
@@ -47,6 +49,10 @@ float getTemp(){
   return TemperatureSum;
 }
 
+/************************************************
+ * getAvgVal()
+ *    returns average value of array, int
+ ************************************************/
 float getAvgVal(int *arr, int size)
 {
   int total = 0;
@@ -57,6 +63,10 @@ float getAvgVal(int *arr, int size)
   return (float)(total/size);
 }
 
+/************************************************
+ * getAvgValFlt()
+ *    returns average value of array, float
+ ************************************************/
 float getAvgValFlt(float *arr, int size)
 {
   float total = 0;
@@ -67,11 +77,18 @@ float getAvgValFlt(float *arr, int size)
   return (float)(total/size);
 }
 
+/************************************************
+ * reverse_rotate()
+ *    alternates rotation direction, runs 10s
+ ************************************************/
 void reverse_rotate()
 {
   driver_dir = !driver_dir;
+  EEPROM.update( EEPROM_DIR, driver_dir );
 
-  // 7142 = 10 seconds of reverse rotation
+  /************************************************
+   * rotate 10 seconds in opposite direction
+   ************************************************/
   for( int i = 0; i < 7142; i++ )
   {
   digitalWrite(driverDIR, driver_dir);
