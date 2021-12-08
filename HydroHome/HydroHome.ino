@@ -16,12 +16,16 @@
 #include "GravityTDS.h"
 #include "HydroHome.h"
 #include "TouchScreen.h"
+#include <SoftwareSerial.h>
+
+SoftwareSerial hblue(0,1);
 
 /************************************************
 * Begin the setup
 ************************************************/
 void setup() {
   Serial.begin(9600);
+  hblue.begin(38400); 
   
   /************************************************
   * Set up I/O
@@ -88,6 +92,19 @@ void setup() {
 ************************************************/
 void loop() 
   {  
+    char ph;
+char ec;
+char tds;
+char temp;
+char liquid;
+
+ph= Serial.read();
+ec= Serial.read();
+tds=Serial.read();
+temp= Serial.read();
+liquid= Serial.read();
+    while (hblue.available())
+    {
   
   /************************************************
   * Check if reed switch tripped, change direction
@@ -195,6 +212,36 @@ void loop()
       }
     }
   }
+
+  if(hblue.available())
+  {
+    char input;
+    input = Serial.read();
+    
+    if( input == 'p' ) {
+      hblue.write( pHAvg );
+    }
+    if( input == 'e' ){
+      hblue.write(ecAvg);
+    }
+    if( input=='d' ){
+      hblue.write(tdsAvg);
+    }
+    
+    if (input =='t'){
+      hblue.write(tempAvg);
+    }
+    if(input =='l'){
+      
+    }
+    
+ 
+    // Feed all data from termial to bluetooth
+    if (Serial.available()){
+      hblue.write(Serial.read());
+    }
+  }
+}
   
 ISR(TIMER1_COMPA_vect)
   {
