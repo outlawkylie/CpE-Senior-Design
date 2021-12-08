@@ -121,6 +121,11 @@ boolean     driver_dir    = EEPROM.read( EEPROM_DIR );
 const uint16_t t1_load = 0;
 const uint16_t t1_comp = 62500;
 
+double  pHAvg;
+float   ecAvg;
+float   tdsAvg;
+float   tempAvg;
+
 OneWire     ds(TEMPSENSORPIN);
 DFRobot_EC  EC_sensor;
 GravityTDS  TDS_sensor;

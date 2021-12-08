@@ -108,7 +108,7 @@ void loop() {
     if(buffIdx == SCOUNT)
       {      
       // Print Temperature Avg
-      float tempAvg = getAvgVal(TEMPbuff, SCOUNT);
+      tempAvg = getAvgVal(TEMPbuff, SCOUNT);
       Serial.print("Temperature:");
       Serial.print(tempAvg*1.8 +32);
       Serial.print("°F\n");
@@ -118,20 +118,20 @@ void loop() {
       TDS_sensor.setTemperature(tempAvg);
       TDS_sensor.update();
       
-      float tdsAvg = getAvgVal(TDSbuff, SCOUNT);
+      tdsAvg = getAvgVal(TDSbuff, SCOUNT);
       Serial.print("TDS:");
       Serial.print(tdsAvg,2);
       Serial.println("ppm\n");
 
       //Print EC
-      float ecAvg = getAvgValFlt(ECbuff, SCOUNT);
+      ecAvg = getAvgValFlt(ECbuff, SCOUNT);
       Serial.print("EC: ");
       Serial.print(ecAvg, 2);
       Serial.print(" ms/cm\n");      
 
       //Print pH
       double voltage = getAvgPH(PHbuff, SCOUNT)*5.0/1024;
-      double pHAvg = 3.5*voltage+PHOFFSET;
+      pHAvg = 3.5*voltage+PHOFFSET;
       Serial.print("pH: ");
       Serial.print(pHAvg, 2);
       Serial.print("\n");

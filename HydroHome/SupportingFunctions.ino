@@ -180,7 +180,7 @@ double getAvgPH(int* arr, int number){
   tft.setTextSize(3);
   tft.setTextColor(BLACK); 
   tft.print("Rotate Tray");
-   tft.fillRoundRect(60, 180, 200, 40, 8, LSEAGREEN1); 
+  tft.fillRoundRect(60, 180, 200, 40, 8, LSEAGREEN1); 
   tft.drawRoundRect(60, 180, 200, 40, 8, GREEN);
   tft.setCursor(65,195);
   tft.setTextSize(3);
@@ -232,44 +232,55 @@ void SensorDataScreen() {
   tft.begin(identifier);
   tft.setRotation(3);
   tft.fillScreen(BLACK);
-  tft.setCursor(70, 10);
-  tft.setTextColor(GREENYELLOW);  tft.setTextSize(3);
-  tft.println("Sensor Data");
-  tft.drawLine(10, 40, 310, 40, CYAN);//
-  tft.setCursor(20, 50);
-  tft.setTextColor(TURQ); tft.setTextSize(2); tft.println("Temperature");
-  tft.setCursor(188, 50);
-  tft.setTextColor(GREEN); tft.setTextSize(2); tft.println("EC (ms/cm2)");
-  /********************************************** DIVIDERS LINES*********************************/
+
+  /************************************************
+   * Draw Lines
+   ************************************************/
   tft.drawLine(160, 40, 160, 230, CYAN);//vertical line
   tft.drawLine(10, 135, 310, 135, CYAN); //horizontal line
+  tft.drawLine(10, 40, 310, 40, CYAN);  //under header line
+
+  /************************************************
+   * Draw Sensor Data
+   ************************************************/
+  tft.setCursor(70, 10);
+  tft.setTextColor(GREENYELLOW);
+  tft.setTextSize(3);
+  tft.println("Sensor Data");
+
+  tft.setCursor(20, 50);
+  tft.setTextColor(TURQ); 
+  tft.setTextSize(2); 
+  tft.println("Temperature");
+  tft.setTextSize(3); 
+  tft.setCursor(50, 85);
+  tft.println(tempAvg, 1);
+
+  tft.setCursor(180, 50);
+  tft.setTextColor(GREEN); 
+  tft.setTextSize(2); 
+  tft.println("EC (ms/cm2)");
+  tft.setTextSize(3); 
+  tft.setCursor(215, 85);
+  tft.println(tempAvg, 1);
+  
   tft.setCursor(40, 150);
   tft.setTextSize(2);
   tft.println("pH level");
-  if(buffIdx == SCOUNT)
-  {
-    
-    }
   tft.setCursor(50, 185);
   tft.setTextSize(3);
-  tft.println("6.9");
+  tft.println(pHAvg, 2);
+
+  tft.setCursor(190, 150); 
   tft.setTextSize(2);
-  tft.setCursor(196, 150); 
   tft.setTextColor(TURQ);
-  tft.println("TDS");
-tft.setCursor(245, 150);
-  tft.setTextColor(TURQ);
-  tft.println("(ppm)");
+  tft.println("TDS (ppm)");
   tft.setCursor(215, 185);
   tft.setTextSize(3);
-  tft.setTextColor(TURQ); 
-  tft.println("690");
-  tft.setCursor(220, 170);
-  tft.setTextSize(2);
-  //tft.println("ppm");
+  tft.println(tdsAvg,0);
+  
  /****************** Back to Home screen Button******************/
-//CLASSBUTTON[index].initButton( &tft, BUTON_X_pos, BUTTON_Y_pos, X_WIDTH, Y_LARGE, BORDER_COLOR, TEXT_COLOR, BUTTON_COLOR, TEXT, FONT_SIZE );
-// buttons.initButton( &tft, 50, 220, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
+
  buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
  buttons.drawButton(true);
 
