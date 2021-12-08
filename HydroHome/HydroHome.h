@@ -3,6 +3,7 @@
  * HydroHome.h - created by Kylie Outlaw
  * and Maria Abbasi for the HydroHome project.
  ************************************************/
+#include "TouchScreen.h"
 
 /************************************************
  * Sensor / Motor Controller Definitions
@@ -64,25 +65,34 @@
  * LCD Color Definitions
  ************************************************/
 
-#define LCD_CS A3     // Chip Select goes to Analog 3
-#define LCD_CD A2     // Command/Data goes to Analog 2
-#define LCD_WR A1     // LCD Write goes to Analog 1
-#define LCD_RD A0     // LCD Read goes to Analog 0
-#define LCD_RESET A4  // Can alternately just connect to Arduino's reset pin
-#define YP A3         // AKA CS Y+ pin
-#define XM A2         // AKA Command Data X- pin
-#define YM 9          // AKA Y- pin
-#define XP 8          // X+ pin
+#define LCD_CS    A3      // Chip Select goes to Analog 3
+#define LCD_CD    A2      // Command/Data goes to Analog 2
+#define LCD_WR    A1      // LCD Write goes to Analog 1
+#define LCD_RD    A0      // LCD Read goes to Analog 0
+#define LCD_RESET A4      // Can alternately just connect to Arduino's reset pin
+#define YP        A3      // AKA CS Y+ pin
+#define XM        A2      // AKA Command Data X- pin
+#define YM        9       // AKA Y- pin
+#define XP        8       // X+ pin
 
  
-#define TS_MIN_X 120  //ADC value for X=0
-#define TS_MAX_X 920  //ADC value for X=240-1
-#define TS_MIN_Y 70   //ADC value for Y=0
-#define TS_MAX_Y 900  //ADC value for Y=320-1
+#define TS_MIN_X    120   //ADC value for X=0
+#define TS_MAX_X    920   //ADC value for X=240-1
+#define TS_MIN_Y    70    //ADC value for Y=0
+#define TS_MAX_Y    900   //ADC value for Y=320-1
 #define MINPRESSURE 10
 #define MAXPRESSURE 1000
 
-
+/************************************************
+ * Types
+ ************************************************/
+ enum Page_type
+ {
+  HOME_PAGE   = 1,
+  SENSOR_PAGE = 2,
+  ROTATE_PAGE = 3,
+  METER_PAGE  = 4
+ };
 
 /************************************************
  * Global Variables
@@ -116,8 +126,8 @@ DFRobot_EC  EC_sensor;
 GravityTDS  TDS_sensor;
 DFRobot_PH  PH_sensor;
 
-Elegoo_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
-TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);// 300 ohms across x plate confirm with dmm
+Elegoo_TFTLCD     tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+TouchScreen ts =  TouchScreen(XP, YP, XM, YM, 300);// 300 ohms across x plate confirm with dmm
 
 
 /************************************************

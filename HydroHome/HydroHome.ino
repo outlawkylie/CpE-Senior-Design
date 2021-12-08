@@ -15,6 +15,7 @@
 #include "DFRobot_EC.h"
 #include "GravityTDS.h"
 #include "HydroHome.h"
+#include "TouchScreen.h"
 
 /************************************************
  * Begin the setup
@@ -78,12 +79,12 @@ void loop() {
    * Check if reed switch tripped
    ************************************************/
   if( digitalRead(REEDSWITCH) == 1 )
-  {
+    {
     reverse_rotate();
-  }
+    }
   
   if(flag == true)
-  {
+    {
     /************************************************
      * Flag indicating sensor read happens every 4s
      ************************************************/
@@ -105,7 +106,7 @@ void loop() {
      * TODO: Update with print to LCD
      ************************************************/
     if(buffIdx == SCOUNT)
-    {      
+      {      
       // Print Temperature Avg
       float tempAvg = getAvgVal(TEMPbuff, SCOUNT);
       Serial.print("Temperature:");
@@ -138,15 +139,15 @@ void loop() {
       // Print Liquid Level
       int liquidLvl = digitalRead(4);
       if( liquidLvl )
-      {
+        {
         Serial.print("\nLiquid level is fine.");
-      }
+        }
       else
-      {
+        {
         Serial.print("\nLiquid level needs refill. ");
         Serial.print("Liquid level is at:");
         Serial.print(liquidLvl);
-      }
+        }
 
       //KO TODO: Replace these statements with equivalent LCD Outputs
       // Check for unstable points. If we reach any, output error message.
@@ -185,58 +186,47 @@ void loop() {
     p.x = map(p.x, TS_MIN_X, TS_MAX_X, tft.width(), 0);
     p.y = (tft.height() - map(p.y, TS_MIN_Y, TS_MAX_Y, tft.height(), 0));
 
-    /**********If Home button is pressed on sensor data screen it takes you to main menu****/
-    if (p.x >= 285 && p.x <= 320 && p.y >= 15 && p.y <= 55 && currentPage == 2)
+    /**********If Home button is pressed on any other screen, it takes you to main menu****/
+    if (p.x >= 285 && p.x <= 320 && p.y >= 15 && p.y <= 55 && currentPage != HOME_PAGE )
       {
-      Serial.println("Home button on screen 2 Selected");
-      currentPage = 1;       
+      currentPage = HOME_PAGE;       
       HomeScreen();  
+      delay(100);
       }
-    /**********If Home button pressed on Rotate tray screen it takes you to main menu****/
-    if (p.x >= 5 && p.x <= 30 && p.y >= 12 && p.y <= 55 && currentPage == 3) 
-      {
-        Serial.println("Home button on screen 3 Selected");
-         currentPage = 1;       
-        HomeScreen();  
-      }   
     }
 
-if (currentPage == 1)
+if (currentPage == HOME_PAGE)
   {
+  if (p.x > 403 && p.x < 525 && p.y > 271 && p.y < 725)
+    {
+    currentPage = SENSOR_PAGE;
+    tft.setCursor(80, 95);
+    tft.print("Sensor Data");
+    SensorDataScreen();
+    delay(100);
+    }
   if (p.x > 563 && p.x < 683 && p.y > 275 && p.y < 750)
     {
-    Serial.println("Rotate Tray");
     tft.print("Rotate Trays");
-    delay(70);
-  
-    currentPage = 3;
+    currentPage = ROTATE_PAGE;
     x = 0;
     y = 0;
     p.z = 0;
     RotateTrayScreen();
-    }
-  if (p.x > 403 && p.x < 525 && p.y > 271 && p.y < 725)
-  //if (p.x > 60 && p.x < 270 && p.y > 80 && p.y < 290)
-    {
-    Serial.println("Sensor Data");
-    currentPage = 2;
-    tft.setCursor(80, 95);
-    tft.print("Sensor Data");
-    SensorDataScreen();
+    delay(100);
     }
   else if (p.x > 736 && p.x < 855 && p.y > 255 && p.y < 725)
     {
-    Serial.println("Meter");
-    currentPage=4;
+    currentPage = METER_PAGE;
     tft.setCursor(80, 95);
     tft.print("Meter");
-    
     meterscreen();
+    delay(100);
     }
   }
 }
 
 ISR(TIMER1_COMPA_vect)
-{
-flag = true;
-}
+  {
+  flag = true;
+  }

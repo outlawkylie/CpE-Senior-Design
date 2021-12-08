@@ -279,33 +279,32 @@ tft.setCursor(245, 150);
  * RotateTrayScreen()
  *    Draws rotate tray screen
  ************************************************/
-void RotateTrayScreen(){
+void RotateTrayScreen()
+  {
   tft.reset();
   getIdentifierScreen();
   tft.begin(identifier);
   tft.setRotation(3);
   tft.fillScreen(BLACK);
-   tft.drawPixel(300,239,ORANGE);
-  //tft.drawPixel(200,250,WHITE);
-  //tft.drawPixel(239,239,PINK);
+  tft.drawPixel(300,239,ORANGE);
   
-   /****************** Back to Home screen Button******************/
-//CLASSBUTTON[index].initButton( &tft, BUTON_X_pos, BUTTON_Y_pos, X_WIDTH, Y_LARGE, BORDER_COLOR, TEXT_COLOR, BUTTON_COLOR, TEXT, FONT_SIZE );
- buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
- buttons.drawButton(true);
+  /****************** Back to Home screen Button******************/
+  buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
+  buttons.drawButton(true);
   }
-  void meterscreen()
+  
+void meterscreen()
   {
-    tft.reset();
+  tft.reset();
   getIdentifierScreen();
   tft.begin(identifier);
   tft.setRotation(3);
   tft.fillScreen(DARKCYAN);
   // Set the the position, gap between meters, and inner radius of the meters
-    int xpos = 0, ypos = 5,gap=4, radius = 52;
+  int xpos = 0, ypos = 5,gap=4, radius = 52;
   ringMeter(reading,0,100,xpos,ypos,radius,"degC",BLUE2RED);
-   buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
- buttons.drawButton(true);
+  buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
+  buttons.drawButton(true);
   }
 
   /************************************************
