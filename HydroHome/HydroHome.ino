@@ -1,12 +1,12 @@
 
 /************************************************
- * HydroHome.ino - created by Kylie Outlaw
- * and Maria Abbasi for the HydroHome project.
- ************************************************/
+* HydroHome.ino - created by Kylie Outlaw
+* and Maria Abbasi for the HydroHome project.
+************************************************/
 
- /************************************************
- * Includes
- ************************************************/
+/************************************************
+* Includes
+************************************************/
 #include <EEPROM.h>
 #include <OneWire.h>
 #include <Elegoo_GFX.h>       // Core graphics library
@@ -18,24 +18,30 @@
 #include "TouchScreen.h"
 
 /************************************************
- * Begin the setup
- ************************************************/
+* Begin the setup
+************************************************/
 void setup() {
   Serial.begin(9600);
-
+  
   /************************************************
-   * Set up I/O
-   ************************************************/
+  * Set up I/O
+  ************************************************/
   pinMode( TDSSENSORPIN,    INPUT );
   pinMode( TEMPSENSORPIN,   INPUT );
   pinMode( LEVELSENSORPIN,  INPUT );
   pinMode( PHSENSORPIN,     INPUT );
   pinMode( DRIVERPUL,       OUTPUT );
   pinMode( DRIVERDIR,       OUTPUT );
+  pinMode( TRAY1_DRAIN,     OUTPUT );
+  pinMode( TRAY2_DRAIN,     OUTPUT );
+  pinMode( TRAY3_DRAIN,     OUTPUT );
+  pinMode( TRAY4_DRAIN,     OUTPUT );
+  pinMode( FILL_SWITCH,     OUTPUT );
+  
 
   /************************************************
-   * Set up TDS Sensor
-   ************************************************/
+  * Set up TDS Sensor
+  ************************************************/
   TDS_sensor.setPin(TDSSENSORPIN);
   TDS_sensor.setAref(5.0);
   TDS_sensor.setAdcRange(1024);
@@ -43,17 +49,17 @@ void setup() {
   TDS_sensor.begin();
 
   /************************************************
-   * Set up EC, PH Sensor, LCD Screen
-   ************************************************/
+  * Set up EC, PH Sensor, LCD Screen
+  ************************************************/
   EC_sensor.begin();
   PH_sensor.begin();
 
   HomeScreen();
 
   /************************************************
-   * Set up timer, 1024 prescalar, PWM
-   * compare interrupt
-   ************************************************/
+  * Set up timer, 1024 prescalar, PWM
+  * compare interrupt
+  ************************************************/
   TCCR1A = 0;
 
   TCCR1B &= ~(1<<WGM13);
@@ -71,23 +77,28 @@ void setup() {
 }
 
 /************************************************
- * Monitoring Loop
- ************************************************/
+* Monitoring Loop
+************************************************/
 void loop() {  
-
+  
   /************************************************
-   * Check if reed switch tripped
-   ************************************************/
-  if( digitalRead(REEDSWITCH) == 1 )
+  * Check if reed switch tripped, change direction
+  ************************************************/
+  if( digitalRead(REEDSWITCH) == 1 && prv_reed == 0 )
     {
-    reverse_rotate();
+    prv_reed = 1;
+    reverse_rotate_dir();
+    }
+  if( digitalRead(REEDSWITCH) == 0 && prv_reed == 1 )
+    {
+    prv_reed = 0;
     }
   
   if(flag == true)
     {
     /************************************************
-     * Flag indicating sensor read happens every 4s
-     ************************************************/
+    * Flag indicating sensor read happens every 4s
+    ************************************************/
     TEMPbuff[buffIdx] = getTemp();
 
     TDS_sensor.update();
@@ -102,9 +113,9 @@ void loop() {
     buffIdx++; //increase buffer indexes
 
     /************************************************
-     * Print data every 4*SCOUNT seconds
-     * TODO: Update with print to LCD
-     ************************************************/
+    * Print data every 4*SCOUNT seconds
+    * TODO: Update with print to LCD
+    ************************************************/
     if(buffIdx == SCOUNT)
       {      
       // Print Temperature Avg
@@ -173,8 +184,8 @@ void loop() {
   }
 
   /************************************************
-   * Data for LCD Screen
-   ************************************************/
+  * Data for LCD Screen
+  ************************************************/
   TSPoint p = ts.getPoint();
   pinMode(XP, OUTPUT);
   pinMode(XM, OUTPUT);

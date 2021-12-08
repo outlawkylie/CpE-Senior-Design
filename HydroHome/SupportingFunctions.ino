@@ -54,6 +54,7 @@ float getTemp(){
   return TemperatureSum;
 }
 
+
 /************************************************
  * getAvgVal()
  *    returns average value of array, int
@@ -67,6 +68,7 @@ float getAvgVal(int *arr, int size)
   }
   return (float)(total/size);
 }
+
 
 /************************************************
  * getAvgValFlt()
@@ -82,33 +84,44 @@ float getAvgValFlt(float *arr, int size)
   return (float)(total/size);
 }
 
+
 /************************************************
- * reverse_rotate()
- *    alternates rotation direction, runs 10s
- ************************************************/
-void reverse_rotate()
+* reverse_rotate_dir()
+*    alternates rotation direction, runs 10s
+************************************************/
+void reverse_rotate_dir()
 {
   driver_dir = !driver_dir;
   EEPROM.update( EEPROM_DIR, driver_dir );
-
-  /************************************************
-   * rotate 10 seconds in opposite direction
-   ************************************************/
-  for( int i = 0; i < 7142; i++ )
-  {
-  digitalWrite(DRIVERDIR, driver_dir);
-  digitalWrite(DRIVERPUL, HIGH);
-  delayMicroseconds(driver_speed);
-  digitalWrite(DRIVERPUL, LOW);
-  delayMicroseconds(driver_speed);
-
-  }
 }
 
 /************************************************
- * getAvgPH()
- *    gets average of PH
- ************************************************/
+* rotate()
+*    rotates trays 1/4
+************************************************/
+void rotate()
+  {
+  cur_tray++;
+  EEPROM.update( EEPROM_TRAY, cur_tray );
+  /************************************************
+  * rotate 10 seconds in target direction
+  ************************************************/
+  for( int i = 0; i < 7142; i++ )
+    {
+    digitalWrite(DRIVERDIR, driver_dir);
+    digitalWrite(DRIVERPUL, HIGH);
+    delayMicroseconds(driver_speed);
+    digitalWrite(DRIVERPUL, LOW);
+    delayMicroseconds(driver_speed);
+    }
+  }
+
+ 
+
+/************************************************
+* getAvgPH()
+*    gets average of PH
+************************************************/
 double getAvgPH(int* arr, int number){
   int i;
   int max,min;
@@ -150,9 +163,9 @@ double getAvgPH(int* arr, int number){
 }
 
 /************************************************
- * HomeScreen()
- *    prints home screen on LCD
- ************************************************/
+* HomeScreen()
+*    prints home screen on LCD
+************************************************/
  void   HomeScreen() {
   tft.reset();
   getIdentifierScreen();
@@ -189,9 +202,9 @@ double getAvgPH(int* arr, int number){
 }
 
 /************************************************
- * ringMeter()
- *    Draw the meter on the screen, returns x coord of righthand side
- ************************************************/
+* ringMeter()
+*    Draw the meter on the screen, returns x coord of righthand side
+************************************************/
 int ringMeter(int value, int vmin, int vmax, int x, int y, int r, char *units, byte scheme)
 {
   // Minimum value of r is about 52 before value text intrudes on ring
@@ -222,9 +235,9 @@ int ringMeter(int value, int vmin, int vmax, int x, int y, int r, char *units, b
 }
 
 /************************************************
- * SensorDataScreen()
- *    Draws Sensor Data Screen
- ************************************************/
+* SensorDataScreen()
+*    Draws Sensor Data Screen
+************************************************/
 void SensorDataScreen() {
 
   tft.reset();
@@ -234,15 +247,15 @@ void SensorDataScreen() {
   tft.fillScreen(BLACK);
 
   /************************************************
-   * Draw Lines
-   ************************************************/
+  * Draw Lines
+  ************************************************/
   tft.drawLine(160, 40, 160, 230, CYAN);//vertical line
   tft.drawLine(10, 135, 310, 135, CYAN); //horizontal line
   tft.drawLine(10, 40, 310, 40, CYAN);  //under header line
 
   /************************************************
-   * Draw Sensor Data
-   ************************************************/
+  * Draw Sensor Data
+  ************************************************/
   tft.setCursor(70, 10);
   tft.setTextColor(GREENYELLOW);
   tft.setTextSize(3);
@@ -279,8 +292,7 @@ void SensorDataScreen() {
   tft.setTextSize(3);
   tft.println(tdsAvg,0);
   
- /****************** Back to Home screen Button******************/
-
+ /* Home screen button */
  buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
  buttons.drawButton(true);
 
@@ -299,7 +311,7 @@ void RotateTrayScreen()
   tft.fillScreen(BLACK);
   tft.drawPixel(300,239,ORANGE);
   
-  /****************** Back to Home screen Button******************/
+  /* Home screen button */
   buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );
   buttons.drawButton(true);
   }

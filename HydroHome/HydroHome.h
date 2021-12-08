@@ -15,11 +15,19 @@
 #define TEMPSENSORPIN   A9    /* temp sensor            */
 
 #define REEDSWITCH      22    /* reed switch, tray loc  */
+#define TRAY1_DRAIN     23
+#define TRAY2_DRAIN     25
+#define TRAY3_DRAIN     27
+#define TRAY4_DRAIN     29
+
+#define FILL_SWITCH     31
+
 #define DRIVERDIR       A14   /* motor direction        */
 #define DRIVERPUL       A15
 
 #define SCOUNT          30
 #define EEPROM_DIR      0
+#define EEPROM_TRAY     1
 #define PHOFFSET        0.04
 
 
@@ -86,13 +94,22 @@
 /************************************************
  * Types
  ************************************************/
- enum Page_type
- {
-  HOME_PAGE   = 1,
-  SENSOR_PAGE = 2,
-  ROTATE_PAGE = 3,
-  METER_PAGE  = 4
- };
+enum lcd_page_type
+  {
+  HOME_PAGE     = 1,
+  SENSOR_PAGE   = 2,
+  ROTATE_PAGE   = 3,
+  METER_PAGE    = 4
+  };
+
+enum tray_loc_type
+  {
+    TRAY_REED,
+    TRAY_TWO,
+    TRAY_THREE,
+    TRAY_FOUR
+  };
+ 
 
 /************************************************
  * Global Variables
@@ -102,29 +119,30 @@ int         TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
 float       ECbuff[SCOUNT]; //EC buffer to hold samples of EC
 int         PHbuff[SCOUNT]; //pH buffer to hold samples of PH
 
-static int  buffIdx     = 0; 
+int         buffIdx     = 0; 
 int         cpyIdx      = 0;
 float       avgVolt     = 0; //value for average voltage
 float       tdsValue    = 0; //value for tds
 float       temperature = 25; //reference temperature
-float       ec_voltage   = 5; //ref ec voltage
-static int  timer_count = 0;
-static bool flag    = false;
+float       ec_voltage  = 5; //ref ec voltage
+int         timer_count = 0;
+bool        flag        = false;
 float       ph_voltage  = 0;
-
-
+bool        prv_reed    = 0;
 float       ecvalue;
 
 int         driver_speed  = 700;
 boolean     driver_dir    = EEPROM.read( EEPROM_DIR );
+uint8_t     cur_tray      = EEPROM.read( EEPROM_TRAY );
+
 
 const uint16_t t1_load = 0;
 const uint16_t t1_comp = 62500;
 
-double  pHAvg;
-float   ecAvg;
-float   tdsAvg;
-float   tempAvg;
+double      pHAvg;
+float       ecAvg;
+float       tdsAvg;
+float       tempAvg;
 
 OneWire     ds(TEMPSENSORPIN);
 DFRobot_EC  EC_sensor;
