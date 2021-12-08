@@ -106,7 +106,8 @@ void rotate()
   /************************************************
   * rotate 10 seconds in target direction
   ************************************************/
-  for( int i = 0; i < 7142; i++ )
+  //7142
+  for( int i = 0; i < 17855; i++ )
     {
     digitalWrite(DRIVERDIR, driver_dir);
     digitalWrite(DRIVERPUL, HIGH);
@@ -177,28 +178,42 @@ double getAvgPH(int* arr, int number){
   tft.setTextColor(LSEAGREEN1);  
   tft.setTextSize(3);
   tft.println("Main Menu");
+  
   tft.setCursor(3, 40);
   tft.setTextSize(2);
   tft.setTextColor(SEAGREEN);
   tft.println("Please tap an option below");
-  tft.fillRoundRect(60, 80, 200, 40, 8, LSEAGREEN1 );
-  tft.drawRoundRect(60, 80,200,40,8, GREEN); 
+  
+  tft.fillRoundRect(60, 80, 205, 40, 8, LSEAGREEN1 );
+  tft.drawRoundRect(60, 80, 205,40,8, SEAGREEN); 
   tft.setCursor(65, 90);
   tft.setTextSize(3);
   tft.setTextColor(BLACK);
   tft.print("Sensor Data");
-  tft.fillRoundRect(60, 130, 200, 40, 8, LSEAGREEN1);   
-  tft.drawRoundRect(60, 130, 200, 40, 8, GREEN);
-  tft.setCursor(65, 145);
+  
+  tft.fillRoundRect(60, 130, 205, 40, 8, LSEAGREEN1);   
+  tft.drawRoundRect(60, 130, 205, 40, 8, SEAGREEN);
+  tft.setCursor(65, 140);
   tft.setTextSize(3);
   tft.setTextColor(BLACK); 
   tft.print("Rotate Tray");
-  tft.fillRoundRect(60, 180, 200, 40, 8, LSEAGREEN1); 
-  tft.drawRoundRect(60, 180, 200, 40, 8, GREEN);
-  tft.setCursor(65,195);
-  tft.setTextSize(3);
-  tft.setTextColor(BLACK);
-  tft.print("Test");
+
+  if( liquidLvl )
+    {
+    tft.fillRoundRect(30, 190, 265, 40, 8, MAROON);   
+    tft.drawRoundRect(30, 190, 265, 40, 8, RED);
+    tft.setCursor(35, 200);
+    tft.setTextSize(2);
+    tft.setTextColor(WHITE); 
+    tft.print(" !!! Water Level Low ");
+    }
+  
+//  tft.fillRoundRect(60, 200, 220, 40, 8, LSEAGREEN1); 
+//  tft.drawRoundRect(60, 200, 220, 40, 8, GREEN);
+//  tft.setCursor(65,195);
+//  tft.setTextSize(3);
+//  tft.setTextColor(BLACK);
+//  tft.print("Test");
 }
 
 /************************************************
@@ -310,6 +325,19 @@ void RotateTrayScreen()
   tft.setRotation(3);
   tft.fillScreen(BLACK);
   tft.drawPixel(300,239,ORANGE);
+
+  tft.fillRoundRect(30, 50, 250, 120, 8, LSEAGREEN1);   
+  tft.drawRoundRect(30, 50, 250, 120, 8, SEAGREEN);
+  tft.setCursor(45, 70);
+  tft.setTextSize(2);
+  tft.setTextColor(BLACK); 
+  tft.print("Please do not touch");
+  tft.setCursor(45, 90);
+  tft.print("anything while the");
+  tft.setCursor(45, 110);
+  tft.print("trays are rotating.");
+  tft.setCursor(55, 130);
+  tft.print("Thank you! :)");
   
   /* Home screen button */
   buttons.initButton( &tft, 30, 20, 70, 30, DARKGREY, BLACK, LSEAGREEN1, "Home", 1 );

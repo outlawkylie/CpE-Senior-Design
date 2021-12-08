@@ -37,6 +37,7 @@ void setup() {
   pinMode( TRAY3_DRAIN,     OUTPUT );
   pinMode( TRAY4_DRAIN,     OUTPUT );
   pinMode( FILL_SWITCH,     OUTPUT );
+  pinMode( GROWLIGHTPIN,    OUTPUT );
   
 
   /************************************************
@@ -49,12 +50,18 @@ void setup() {
   TDS_sensor.begin();
 
   /************************************************
+  * Set up Grow Light to Always Be On
+  ************************************************/
+  digitalWrite( GROWLIGHTPIN, HIGH );
+
+  /************************************************
   * Set up EC, PH Sensor, LCD Screen
   ************************************************/
   EC_sensor.begin();
   PH_sensor.begin();
 
   HomeScreen();
+  currentPage = HOME_PAGE;
 
   /************************************************
   * Set up timer, 1024 prescalar, PWM
@@ -79,7 +86,8 @@ void setup() {
 /************************************************
 * Monitoring Loop
 ************************************************/
-void loop() {  
+void loop() 
+  {  
   
   /************************************************
   * Check if reed switch tripped, change direction
@@ -120,9 +128,6 @@ void loop() {
       {      
       // Print Temperature Avg
       tempAvg = getAvgVal(TEMPbuff, SCOUNT);
-      Serial.print("Temperature:");
-      Serial.print(tempAvg*1.8 +32);
-      Serial.print("°F\n");
       buffIdx = 0;
       
       // Print TDS Avg
@@ -130,56 +135,18 @@ void loop() {
       TDS_sensor.update();
       
       tdsAvg = getAvgVal(TDSbuff, SCOUNT);
-      Serial.print("TDS:");
-      Serial.print(tdsAvg,2);
-      Serial.println("ppm\n");
 
       //Print EC
-      ecAvg = getAvgValFlt(ECbuff, SCOUNT);
-      Serial.print("EC: ");
-      Serial.print(ecAvg, 2);
-      Serial.print(" ms/cm\n");      
+      ecAvg = getAvgValFlt(ECbuff, SCOUNT);      
 
       //Print pH
       double voltage = getAvgPH(PHbuff, SCOUNT)*5.0/1024;
       pHAvg = 3.5*voltage+PHOFFSET;
-      Serial.print("pH: ");
-      Serial.print(pHAvg, 2);
-      Serial.print("\n");
       
       // Print Liquid Level
-      int liquidLvl = digitalRead(4);
-      if( liquidLvl )
-        {
-        Serial.print("\nLiquid level is fine.");
-        }
-      else
-        {
-        Serial.print("\nLiquid level needs refill. ");
-        Serial.print("Liquid level is at:");
-        Serial.print(liquidLvl);
-        }
-
-      //KO TODO: Replace these statements with equivalent LCD Outputs
-      // Check for unstable points. If we reach any, output error message.
-      if(tdsAvg < 300){ Serial.print("\nTDS low. Add nutrient solution.\n");}
-      if(tempAvg < 3) { Serial.print("\nTemperature low. Please move plant to warmer area.\n");}
-      if(tempAvg > 30){ Serial.print("\nTemperature high. Please move plant to cooler area.\n");}
+      liquidLvl = digitalRead(4);
       
-      Serial.print("\n* * * * * * * * * *\n");
-
-
-      //Run the motor just a little
-      // Each "j" is 1.4ms
-      for( int j = 0; j < 10000; j++ )
-        {
-        digitalWrite(DRIVERDIR, driver_dir);
-        digitalWrite(DRIVERPUL, HIGH);
-        delayMicroseconds(driver_speed);
-        digitalWrite(DRIVERPUL, LOW);
-        delayMicroseconds(driver_speed);
-        }
-    }
+      }
     flag = false;
   }
 
@@ -205,38 +172,30 @@ void loop() {
       delay(100);
       }
     }
-
-if (currentPage == HOME_PAGE)
-  {
-  if (p.x > 403 && p.x < 525 && p.y > 271 && p.y < 725)
+  if (currentPage == HOME_PAGE)
     {
-    currentPage = SENSOR_PAGE;
-    tft.setCursor(80, 95);
-    tft.print("Sensor Data");
-    SensorDataScreen();
-    delay(100);
-    }
-  if (p.x > 563 && p.x < 683 && p.y > 275 && p.y < 750)
-    {
-    tft.print("Rotate Trays");
-    currentPage = ROTATE_PAGE;
-    x = 0;
-    y = 0;
-    p.z = 0;
-    RotateTrayScreen();
-    delay(100);
-    }
-  else if (p.x > 736 && p.x < 855 && p.y > 255 && p.y < 725)
-    {
-    currentPage = METER_PAGE;
-    tft.setCursor(80, 95);
-    tft.print("Meter");
-    meterscreen();
-    delay(100);
+    if (p.x > 403 && p.x < 525 && p.y > 271 && p.y < 725)
+      {
+      currentPage = SENSOR_PAGE;
+      tft.setCursor(80, 95);
+      tft.print("Sensor Data");
+      SensorDataScreen();
+      delay(100);
+      }
+    else if (p.x > 563 && p.x < 683 && p.y > 275 && p.y < 750)
+      {
+      tft.print("Rotate Trays");
+      currentPage = ROTATE_PAGE;
+      x = 0;
+      y = 0;
+      p.z = 0;      
+      RotateTrayScreen();
+      rotate();
+      delay(100);
+      }
     }
   }
-}
-
+  
 ISR(TIMER1_COMPA_vect)
   {
   flag = true;

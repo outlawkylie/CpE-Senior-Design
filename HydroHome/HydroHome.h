@@ -14,6 +14,8 @@
 #define TDSSENSORPIN    A8    /* TDS sensor             */
 #define TEMPSENSORPIN   A9    /* temp sensor            */
 
+#define GROWLIGHTPIN    35
+
 #define REEDSWITCH      22    /* reed switch, tray loc  */
 #define TRAY1_DRAIN     23
 #define TRAY2_DRAIN     25
@@ -22,8 +24,8 @@
 
 #define FILL_SWITCH     31
 
-#define DRIVERDIR       A14   /* motor direction        */
-#define DRIVERPUL       A15
+#define DRIVERPUL       A14   /* motor direction        */
+#define DRIVERDIR       A15
 
 #define SCOUNT          30
 #define EEPROM_DIR      0
@@ -72,12 +74,12 @@
 /************************************************
  * LCD Color Definitions
  ************************************************/
-
-#define LCD_CS    A3      // Chip Select goes to Analog 3
-#define LCD_CD    A2      // Command/Data goes to Analog 2
-#define LCD_WR    A1      // LCD Write goes to Analog 1
 #define LCD_RD    A0      // LCD Read goes to Analog 0
+#define LCD_WR    A1      // LCD Write goes to Analog 1
+#define LCD_CD    A2      // Command/Data goes to Analog 2
+#define LCD_CS    A3      // Chip Select goes to Analog 3
 #define LCD_RESET A4      // Can alternately just connect to Arduino's reset pin
+
 #define YP        A3      // AKA CS Y+ pin
 #define XM        A2      // AKA Command Data X- pin
 #define YM        9       // AKA Y- pin
@@ -130,6 +132,7 @@ bool        flag        = false;
 float       ph_voltage  = 0;
 bool        prv_reed    = 0;
 float       ecvalue;
+int         liquidLvl;
 
 int         driver_speed  = 700;
 boolean     driver_dir    = EEPROM.read( EEPROM_DIR );
