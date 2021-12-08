@@ -107,7 +107,7 @@ void rotate()
   * rotate 10 seconds in target direction
   ************************************************/
   //7142
-  for( int i = 0; i < 17855; i++ )
+  for( int i = 0; i < 22000; i++ )
     {
     digitalWrite(DRIVERDIR, driver_dir);
     digitalWrite(DRIVERPUL, HIGH);
