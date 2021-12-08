@@ -1,9 +1,6 @@
-#include "HydroHome.h"
-#include "DFRobot_PH.h"
-#include "DFRobot_EC.h"
-#include "GravityTDS.h"
+
 /************************************************
- * readsensors.ino - created by Kylie Outlaw
+ * HydroHome.ino - created by Kylie Outlaw
  * and Maria Abbasi for the HydroHome project.
  ************************************************/
 
@@ -12,56 +9,12 @@
  ************************************************/
 #include <EEPROM.h>
 #include <OneWire.h>
-
-/************************************************
- * Definitions
- ************************************************/
-#define PHSENSORPIN     A5    /* pH sensor              */
-#define LEVELSENSORPIN  A6    /* water level sensor     */
-#define ECSENSORPIN     A7    /* EC sensor              */
-#define TDSSENSORPIN    A8    /* TDS sensor             */
-#define TEMPSENSORPIN   A9    /* temp sensor            */
-
-#define REEDSWITCH      22    /* reed switch, tray loc  */
-#define DRIVERDIR       A14   /* motor direction        */
-#define DRIVERPUL       A15
-
-#define SCOUNT          30
-#define EEPROM_DIR      0
-#define PHOFFSET        0.04
-
-/************************************************
- * Global Variables
- ************************************************/
-int   TDSbuff[SCOUNT]; //TDS buffer to hold samples of TDS
-int   TEMPbuff[SCOUNT]; //Temp buffer to hold samples of TEMPERATURE
-float ECbuff[SCOUNT]; //EC buffer to hold samples of EC
-int   PHbuff[SCOUNT]; //pH buffer to hold samples of PH
-
-static int  buffIdx     = 0; 
-int         cpyIdx      = 0;
-float       avgVolt     = 0; //value for average voltage
-float       tdsValue    = 0; //value for tds
-float       temperature = 25; //reference temperature
-float       ec_voltage   = 5; //ref ec voltage
-static int  timer_count = 0;
-static bool flag    = false;
-float       ph_voltage  = 0;
-
-
-float ecvalue;
-
-int     driver_speed  = 700;
-boolean driver_dir    = EEPROM.read( EEPROM_DIR );
-
-const uint16_t t1_load = 0;
-const uint16_t t1_comp = 62500;
-
-OneWire ds(TEMPSENSORPIN);
-DFRobot_EC EC_sensor;
-GravityTDS TDS_sensor;
-DFRobot_PH PH_sensor;
-
+#include <Elegoo_GFX.h>       // Core graphics library
+#include <Elegoo_TFTLCD.h>    // Hardware-specific library
+#include "DFRobot_PH.h"
+#include "DFRobot_EC.h"
+#include "GravityTDS.h"
+#include "HydroHome.h"
 
 /************************************************
  * Begin the setup
@@ -89,10 +42,12 @@ void setup() {
   TDS_sensor.begin();
 
   /************************************************
-   * Set up EC, PH Sensor
+   * Set up EC, PH Sensor, LCD Screen
    ************************************************/
   EC_sensor.begin();
   PH_sensor.begin();
+
+  HomeScreen();
 
   /************************************************
    * Set up timer, 1024 prescalar, PWM
@@ -214,6 +169,70 @@ void loop() {
         }
     }
     flag = false;
+  }
+
+  /************************************************
+   * Data for LCD Screen
+   ************************************************/
+  TSPoint p = ts.getPoint();
+  pinMode(XP, OUTPUT);
+  pinMode(XM, OUTPUT);
+  pinMode(YP, OUTPUT);
+  
+  if (p.z > MINPRESSURE && p.z < MAXPRESSURE) 
+    {
+    // scale from 0->1023 to tft.width
+    p.x = map(p.x, TS_MIN_X, TS_MAX_X, tft.width(), 0);
+    p.y = (tft.height() - map(p.y, TS_MIN_Y, TS_MAX_Y, tft.height(), 0));
+
+    /**********If Home button is pressed on sensor data screen it takes you to main menu****/
+    if (p.x >= 285 && p.x <= 320 && p.y >= 15 && p.y <= 55 && currentPage == 2)
+      {
+      Serial.println("Home button on screen 2 Selected");
+      currentPage = 1;       
+      HomeScreen();  
+      }
+    /**********If Home button pressed on Rotate tray screen it takes you to main menu****/
+    if (p.x >= 5 && p.x <= 30 && p.y >= 12 && p.y <= 55 && currentPage == 3) 
+      {
+        Serial.println("Home button on screen 3 Selected");
+         currentPage = 1;       
+        HomeScreen();  
+      }   
+    }
+
+if (currentPage == 1)
+  {
+  if (p.x > 563 && p.x < 683 && p.y > 275 && p.y < 750)
+    {
+    Serial.println("Rotate Tray");
+    tft.print("Rotate Trays");
+    delay(70);
+  
+    currentPage = 3;
+    x = 0;
+    y = 0;
+    p.z = 0;
+    RotateTrayScreen();
+    }
+  if (p.x > 403 && p.x < 525 && p.y > 271 && p.y < 725)
+  //if (p.x > 60 && p.x < 270 && p.y > 80 && p.y < 290)
+    {
+    Serial.println("Sensor Data");
+    currentPage = 2;
+    tft.setCursor(80, 95);
+    tft.print("Sensor Data");
+    SensorDataScreen();
+    }
+  else if (p.x > 736 && p.x < 855 && p.y > 255 && p.y < 725)
+    {
+    Serial.println("Meter");
+    currentPage=4;
+    tft.setCursor(80, 95);
+    tft.print("Meter");
+    
+    meterscreen();
+    }
   }
 }
 
